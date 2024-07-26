@@ -7,14 +7,14 @@ defmodule LogLevel do
   def to_label(5, false), do: :fatal
   def to_label(_, _), do: :unknown
 
-  def alert_recipient(level, legacy?) do
-    label = to_label(level, legacy?)
-
-    cond do
-      label in ~w(error fatal)a -> :ops
-      label == :unknown and legacy? -> :dev1
-      label == :unknown -> :dev2
-      true -> false
-    end
+  def alert_recipient(level, legacy?) when is_integer(level) do
+    to_label(level, legacy?)
+    |> alert_recipient(legacy?)
   end
+
+  def alert_recipient(:fatal, _), do: :ops
+  def alert_recipient(:error, _), do: :ops
+  def alert_recipient(:unknown, true), do: :dev1
+  def alert_recipient(:unknown, _), do: :dev2
+  def alert_recipient(label, _) when is_atom(label), do: false
 end
